@@ -10,7 +10,17 @@ function addInlineDataGraph() {
 
   table_parent.insertBefore(graph_div, table);
 
-  getDataFromTable(table);
+  let svg = dimple.newSvg("#"+graph_div.id, 590, 800);
+  let data = getDataFromTable(table);
+  console.log(data);
+  let myChart = new dimple.chart(svg, data);
+  myChart.setBounds(60, 30, 505, 705);
+  let x = myChart.addCategoryAxis("x", "Year");
+  let y = myChart.addMeasureAxis("y", "Nombre");
+  // y.overrideMax = 50000;
+  myChart.addLegend(60, 10, 500, 20, "right");
+  myChart.addSeries("Country", dimple.plot.line, [x, y]);
+  myChart.draw();
 }
 
 
@@ -22,8 +32,6 @@ function getDataFromTable(table) {
 
   // Stores years for Y data
   let years = [];
-
-  console.log(rows);
 
   for (let i = 0; i < nbRows; i++) {
 
@@ -41,33 +49,26 @@ function getDataFromTable(table) {
       continue;
     }
 
-    let rowData = {};
-    // rowData.dataset = [];
-
     // Otherwise loop through the data
     let cells = rows[i].getElementsByTagName('td');
-    const cellsLength = cells.length;
+    let cellsLength = cells.length;
 
-    for (let j = 0; j < cellsLength; j++) {
+    let rowCountry = cells[0].innerHTML;
 
-      // If we're ion the data
-      if(j === 0) {
-        rowData.country = cells[0].innerHTML;
-      }
-      else {
-        // rowData.dataset.push(cells[j].innerHTML);
-        // rowData["Year"] = years[j-1];
-        rowData[years[j-1]] = cells[j].innerHTML;
-      }
+    for (let j = 1; j < cellsLength; j++) {
+        let dataPoint = {"Country":rowCountry};
+        dataPoint["Year"] = years[j-1];
+        let nb = parseFloat(cells[j].innerHTML.replace(",", "."))*1000;
+        dataPoint["Nombre"] = Number.isNaN(nb) ? 0 : nb;
+
+        dataObj.push(dataPoint);
     }
     // End cells loop
-
-    dataObj.push(rowData);
 
   }
   // End row loop
 
   console.log(dataObj);
-  console.log(years);
+  return dataObj;
 
 }
