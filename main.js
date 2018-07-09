@@ -20,31 +20,44 @@ function getDataFromTable(table) {
   const nbRows = rows.length;
   let dataObj = [];
 
+  // Stores years for Y data
+  let years = [];
+
   console.log(rows);
 
   for (let i = 0; i < nbRows; i++) {
 
     // Skip if it's the first row (titles)
     if(i === 0) {
+      let cells = rows[0].getElementsByTagName('th');
+      let nbCells = cells.length;
+
+      for (let j = 0; j < nbCells; j++) {
+        // Skip first two matches (they're empty)
+        if (j < 2) continue;
+        // Push the data for the rest
+        years.push(cells[j].innerHTML);
+      }
       continue;
     }
 
-    console.log(rows[i]);
-    console.log(i);
-
     let rowData = {};
-    rowData.dataset = [];
+    // rowData.dataset = [];
 
     // Otherwise loop through the data
     let cells = rows[i].getElementsByTagName('td');
     const cellsLength = cells.length;
 
     for (let j = 0; j < cellsLength; j++) {
+
+      // If we're ion the data
       if(j === 0) {
         rowData.country = cells[0].innerHTML;
       }
       else {
-        rowData.dataset.push(cells[j].innerHTML);
+        // rowData.dataset.push(cells[j].innerHTML);
+        // rowData["Year"] = years[j-1];
+        rowData[years[j-1]] = cells[j].innerHTML;
       }
     }
     // End cells loop
@@ -55,5 +68,6 @@ function getDataFromTable(table) {
   // End row loop
 
   console.log(dataObj);
+  console.log(years);
 
 }
