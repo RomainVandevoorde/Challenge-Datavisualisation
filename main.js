@@ -1,5 +1,7 @@
 
-addEventListener("load", addInlineDataGraph);
+window.addEventListener("load", addInlineDataGraph);
+window.addEventListener("load", addInlineDataGraph2);
+window.addEventListener("load", addRemoteDataGraph);
 
 function addInlineDataGraph() {
   const table = document.getElementsByTagName('table')[0];
@@ -40,6 +42,52 @@ function addInlineDataGraph() {
   });
 }
 
+function addInlineDataGraph2() {
+  const table = document.getElementById("table2");
+  let div = document.createElement("div");
+  div.id = "datavis-div2";
+
+  table.parentNode.insertBefore(div, table);
+
+  let svg = dimple.newSvg("#"+div.id, "100%", 600);
+  let data = getTable2Data(table);
+
+  let myChart = new dimple.chart(svg, data);
+  let x = myChart.addCategoryAxis("x", "year");
+  let y = myChart.addMeasureAxis("y", "data");
+  myChart.setBounds(60, 100, "100%,-61px", "450px");
+  let legend = myChart.addLegend(0, 10, "100%", 100, "left");
+  myChart.addSeries("country", dimple.plot.line, [x, y]);
+
+  myChart.draw();
+}
+
+function getTable2Data(table) {
+  let data = [];
+
+  let rows = table.rows;
+  let nbRows = rows.length;
+
+  for(let i = 1; i < nbRows; i++) {
+
+    let cells = rows[i].cells;
+    let nbCells = cells.length;
+
+    for(let j = 2; j < nbCells; j++) {
+      // console.log(rows[0].cells);
+      data.push({
+        "year" : rows[0].cells[j].innerHTML,
+        "country" : cells[1].innerHTML,
+        "data" : cells[j].innerHTML});
+    }
+
+  }
+
+  console.log(data);
+  return data;
+
+}
+
 function toggleCountry(e, graph, data, target) {
   console.log(e);
   let country = e.aggField[0];
@@ -69,7 +117,12 @@ function toggleCountry(e, graph, data, target) {
   graph.draw(1200);
 }
 
+// ****************************
+//
+// Function to get data from the first table
 // Requires a DOM element
+//
+// ****************************
 function getDataFromTable1(table) {
   let rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
   const nbRows = rows.length;
@@ -114,4 +167,14 @@ function getDataFromTable1(table) {
   console.log(dataObj);
   return dataObj;
 
+}
+
+
+function addRemoteDataGraph() {
+  const container = document.getElementById("content");
+
+  let div = document.createElement("div");
+  div.id = "datavis-div3";
+
+  container.insertBefore(div, container.firstChild);
 }
