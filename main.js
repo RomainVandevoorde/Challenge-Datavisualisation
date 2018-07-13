@@ -172,9 +172,65 @@ function getDataFromTable1(table) {
 
 function addRemoteDataGraph() {
   const container = document.getElementById("content");
-
   let div = document.createElement("div");
   div.id = "datavis-div3";
 
-  container.insertBefore(div, container.firstChild);
+  container.prepend(div);
+
+  let svg = dimple.newSvg("#"+div.id, "100%", 600);
+
+  let myChart = new dimple.chart(svg, []);
+  let x = myChart.addCategoryAxis("x", "index");
+  x.hidden = true;
+  let y = myChart.addMeasureAxis("y", "data");
+  myChart.setBounds(60, 100, "100%,-61px", "450px");
+  // let legend = myChart.addLegend(0, 10, "100%", 100, "left");
+  myChart.addSeries(null, dimple.plot.bubble);
+  myChart.data = [];
+
+  // myChart.draw();
+
+  addRemoteData(myChart);
+}
+
+function fetchRemoteData() {
+  return new Promise(function(resolve, reject) {
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if(this.readyState === 4 && this.status === 200) {
+        if(this.status === 200) {
+          resolve(this.responseText);
+        }
+        else {
+          console.log("Status: "+this.status+" "+this.statusText);
+          console.log(this.responseText);
+          reject("Status: "+this.status+" "+this.statusText);
+        }
+      }
+    };
+    xhr.open("GET", "https://inside.becode.org/api/v1/data/random.json", true);
+    xhr.send();
+  });
+}
+
+function addRemoteData(chart) {
+  let dataLen = chart.data.length;
+  let lastIndex = (chart.data.length > 0) ? chart.data[dataLen-1].index : 0;
+
+  fetchRemoteData()
+  .then(function(data) {
+    let array = JSON.parse(data);
+    let arrayLen = array.length;
+    let res = [];
+
+    for(let i = 0; i < arrayLen; i++) {
+      chart.data.push({"index" : lastIndex+1+i, "data" : array[i][1]});
+      if(chart.data.length > 40) chart.data.shift();
+    }
+    console.log(chart.data);
+    chart.draw(500);
+    window.setTimeout(function(){addRemoteData(chart)}, 1000);
+  })
+  .catch(res => console.log("Catch: " + res));
+
 }
